@@ -181,7 +181,6 @@ public abstract class AbstractCurrencyDateCalculator<E extends Serializable> imp
         E date = calculateDate;
         if (isLastWorkingDayOfMonth(startDate)){
             while (!isLastWorkingDayOfMonth(date)){
-                date = calculateNextDay(date);
                 date = this.adjustDate(date,BigDecimal.ONE.intValue(),this);
             }
         }

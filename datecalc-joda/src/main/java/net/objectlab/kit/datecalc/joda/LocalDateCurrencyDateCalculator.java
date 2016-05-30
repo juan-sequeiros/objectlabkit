@@ -45,8 +45,8 @@ public class LocalDateCurrencyDateCalculator extends AbstractCurrencyDateCalcula
 
     @Override
     public LocalDate adjustDate(LocalDate startDate, int increment, NonWorkingDayChecker<LocalDate> checker) {
-        LocalDate date = startDate;
-        final int month = date.getMonthOfYear();
+        LocalDate date = this.calculateNextDay(startDate);
+        final int month = startDate.getMonthOfYear();
         int stepToUse = increment;
         while (checker.isNonWorkingDay(date)) {
             date = date.plusDays(stepToUse);

@@ -57,9 +57,10 @@ public class DateCurrencyDateCalculator extends AbstractCurrencyDateCalculator<D
 
     @Override
     public Date adjustDate(final Date startDate, final int increment, final NonWorkingDayChecker<Date> checker) {
-        final Calendar cal = (Calendar) Utils.getCal(startDate).clone();
+        final Calendar cal = (Calendar) Utils.getCal(calculateNextDay(startDate)).clone();
+        final Calendar startDateCalendar = (Calendar) Utils.getCal(startDate).clone();
         int step = increment;
-        final int month = cal.get(Calendar.MONTH);
+        final int month = startDateCalendar.get(Calendar.MONTH);
 
         while (checker.isNonWorkingDay(cal.getTime())) {
             cal.add(Calendar.DAY_OF_MONTH, step);
