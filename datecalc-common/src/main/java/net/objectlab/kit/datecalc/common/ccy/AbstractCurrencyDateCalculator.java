@@ -1,5 +1,6 @@
 package net.objectlab.kit.datecalc.common.ccy;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -150,6 +151,12 @@ public abstract class AbstractCurrencyDateCalculator<E> implements CurrencyDateC
 
     protected abstract E max(E d1, E d2);
 
+    protected abstract E lastDayOfMonth(E date);
+
+    protected abstract E adjustDate(E startDate, int increment, NonWorkingDayChecker<E> checker);
+
+    protected abstract Boolean equal(E d1, E d2);
+
     private boolean isNonWorkingDay(final E date, final WorkingWeek ww, final HolidayCalendar<E> calendar) {
         return !ww.isWorkingDayFromCalendar(calendarWeekDay(date)) || calendar != null && calendar.isHoliday(date);
     }
@@ -157,6 +164,26 @@ public abstract class AbstractCurrencyDateCalculator<E> implements CurrencyDateC
     public boolean isNonWorkingDay(final E date) {
         return isNonWorkingDay(date, ccy1Week, ccy1HolidayCalendar) || isNonWorkingDay(date, ccy2Week, ccy2HolidayCalendar) || !brokenDateAllowed
                 && isNonWorkingDay(date, crossCcyWeek, crossCcyHolidayCalendar);
+    }
+
+    private E lastWorkingDayOfMonth(final E startDate){
+        final E date = this.adjustDate(this.lastDayOfMonth(startDate), BigDecimal.ONE.intValue(),this);
+        return date;
+    }
+
+    private Boolean isLastWorkingDayOfMonth(final E startDate){
+        final E date = this.lastWorkingDayOfMonth(startDate);
+        return this.equal(date,startDate);
+    }
+
+    private  E adjustIfSpotIsLastWorkingDayOfMonth(final E startDate, final E calculateDate){
+        E date = calculateDate;
+        if (isLastWorkingDayOfMonth(startDate)){
+            while (!isLastWorkingDayOfMonth(date)){
+                date = this.adjustDate(date,BigDecimal.ONE.intValue(),this);
+            }
+        }
+        return date;
     }
 
     private E adjustToNextWorkingDateForCcyPairIfRequired(final E startDate) {
@@ -296,6 +323,7 @@ public abstract class AbstractCurrencyDateCalculator<E> implements CurrencyDateC
             break;
         case MONTH:
             calc = addMonths(calc, unit);
+            calc = adjustIfSpotIsLastWorkingDayOfMonth(date,calc);
             calc = adjustForCcyPairIfRequired(calc);
             break;
         default:

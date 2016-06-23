@@ -3,6 +3,7 @@ package net.objectlab.kit.datecalc.jdk;
 import java.util.Calendar;
 
 import net.objectlab.kit.datecalc.common.CurrencyDateCalculatorBuilder;
+import net.objectlab.kit.datecalc.common.NonWorkingDayChecker;
 import net.objectlab.kit.datecalc.common.ccy.AbstractCurrencyDateCalculator;
 
 /**
@@ -38,6 +39,38 @@ public class CalendarCurrencyDateCalculator extends AbstractCurrencyDateCalculat
     @Override
     protected Calendar max(final Calendar d1, final Calendar d2) {
         return d1.compareTo(d2) > 0 ? d1 : d2;
+    }
+
+    @Override
+    protected Calendar lastDayOfMonth(Calendar date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date.getTime());
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return calendar;
+    }
+
+    @Override
+    public Calendar adjustDate(final Calendar startDate, final int increment, final NonWorkingDayChecker<Calendar> checker) {
+        final Calendar cal = (Calendar) calculateNextDay(startDate).clone();
+        final Calendar startDateCalendar = (Calendar) startDate.clone();
+        int step = increment;
+        final int month = startDateCalendar.get(Calendar.MONTH);
+
+        while (checker.isNonWorkingDay(cal)) {
+            cal.add(Calendar.DAY_OF_MONTH, step);
+            if (month != cal.get(Calendar.MONTH)) {
+                // switch direction and go back
+                step *= -1;
+                cal.add(Calendar.DAY_OF_MONTH, step);
+            }
+        }
+
+        return cal;
+    }
+
+    @Override
+    protected Boolean equal(Calendar d1, Calendar d2) {
+        return d1.compareTo(d2) == 0 ? Boolean.TRUE : Boolean.FALSE;
     }
 
 }
